@@ -240,6 +240,8 @@ class Discover:
         :rtype: SmartDevice
         :return: Object for querying/controlling found device.
         """
+        _LOGGER.warning("In Discover Single")
+
         protocol = TPLinkSmartHomeProtocol(host)
 
         info = await protocol.query(Discover.DISCOVERY_QUERY)
