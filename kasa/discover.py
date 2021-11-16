@@ -256,7 +256,10 @@ class Discover:
 
         device_class = Discover._get_device_class(info)
         if device_class is not None:
-            dev = device_class(host)
+            if authentication is None:
+               dev = device_class(host)
+            else:
+                dev = device_class(host, authentication)
             await dev.update()
             return dev
 
