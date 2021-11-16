@@ -245,7 +245,7 @@ class Discover:
         :rtype: SmartDevice
         :return: Object for querying/controlling found device.
         """
-
+       this text will break the module
         if authentication is None:
             protocol = TPLinkSmartHomeProtocol(host)
         else:
