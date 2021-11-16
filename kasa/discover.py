@@ -9,6 +9,7 @@ from typing import Awaitable, Callable, Dict, Mapping, Optional, Type, Union, ca
 
 from kasa.auth import Auth
 from kasa.protocol import TPLinkSmartHomeProtocol
+from kasa.klapprotocol import TPLinkKLAP
 from kasa.smartbulb import SmartBulb
 from kasa.smartdevice import SmartDevice, SmartDeviceException
 from kasa.smartdimmer import SmartDimmer
@@ -241,7 +242,11 @@ class Discover:
         :return: Object for querying/controlling found device.
         """
 
-        protocol = TPLinkSmartHomeProtocol(host)
+        if authentication is None:
+            protocol = TPLinkSmartHomeProtocol(host)
+        else:
+            protocol = TPLinkKLAP(host, authentication)
+        # protocol = TPLinkSmartHomeProtocol(host)
 
         info = await protocol.query(Discover.DISCOVERY_QUERY)
 
