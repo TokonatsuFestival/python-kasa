@@ -17,13 +17,10 @@ import inspect
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from enum import Enum, auto
+from typing import Any, Dict, List, Optional, Set, Union
 
 from .auth import Auth
-from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Set
-
 from .emeterstatus import EmeterStatus
 from .exceptions import SmartDeviceException
 from .klapprotocol import TPLinkKLAP
@@ -190,15 +187,9 @@ class SmartDevice:
 
     """
 
-<<<<<<< HEAD
-    protocol: Union[TPLinkSmartHomeProtocol, TPLinkKLAP]
-
-    def __init__(self, host: str, authentication: Optional[Auth] = None) -> None:
-=======
     TIME_SERVICE = "time"
 
-    def __init__(self, host: str) -> None:
->>>>>>> far/master
+    def __init__(self, host: str, authentication: Optional[Auth] = None) -> None:
         """Create a new SmartDevice instance.
 
         :param str host: host name or ip address on which the device listens

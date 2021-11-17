@@ -5,7 +5,7 @@ import hashlib
 import json
 import logging
 import socket
-from typing import Awaitable, Callable, Dict, Optional, Type, cast
+from typing import Awaitable, Callable, Dict, Mapping, Optional, Type, Union, cast
 
 from kasa.auth import Auth
 from kasa.protocol import TPLinkSmartHomeProtocol

@@ -26,12 +26,52 @@ class TPLinkProtocol:
     """Base class for all TP-Link Smart Home communication."""
 
     DEFAULT_TIMEOUT = 5
-<<<<<<< HEAD
 
     def __init__(self, host: str) -> None:
         self.host = host
         self.timeout = TPLinkProtocol.DEFAULT_TIMEOUT
-=======
+
+    async def query(self, request: Union[str, Dict], retry_count: int = 3) -> Dict:
+        """Request information from a TP-Link SmartHome Device.
+
+        :param request: command to send to the device (can be either dict or
+        json string)
+        :param retry_count: how many retries to do in case of failure
+        :return: response dict
+        """
+        if isinstance(request, dict):
+            request = json.dumps(request)
+
+        for retry in range(retry_count + 1):
+            try:
+                _LOGGER.debug("> (%i) %s", len(request), request)
+                response = await self._ask(request)
+                json_payload = json.loads(response)
+                _LOGGER.debug("< (%i) %s", len(response), pf(json_payload))
+
+                return json_payload
+
+            except Exception as ex:
+                if retry >= retry_count:
+                    _LOGGER.debug("Giving up after %s retries", retry)
+                    raise SmartDeviceException(
+                        "Unable to query the device: %s" % ex
+                    ) from ex
+
+                _LOGGER.debug("Unable to query the device, retrying: %s", ex)
+
+        raise SmartDeviceException("Not reached")
+
+    async def _ask(self, request: str) -> str:
+        raise SmartDeviceException("ask should be overridden")
+
+
+class TPLinkSmartHomeProtocol(TPLinkProtocol):
+    """Implementation of the TP-Link Smart Home protocol."""
+
+    INITIALIZATION_VECTOR = 171
+    DEFAULT_PORT = 9999
+    DEFAULT_TIMEOUT = 5
     BLOCK_SIZE = 4
 
     def __init__(self, host: str) -> None:
@@ -50,11 +90,11 @@ class TPLinkProtocol:
         elif self.loop != loop:
             _LOGGER.warning("Detected protocol reuse between different event loop")
             self._reset()
->>>>>>> far/master
 
     async def query(self, request: Union[str, Dict], retry_count: int = 3) -> Dict:
         """Request information from a TP-Link SmartHome Device.
 
+        :param str host: host name or ip address of the device
         :param request: command to send to the device (can be either dict or
         json string)
         :param retry_count: how many retries to do in case of failure
@@ -69,8 +109,6 @@ class TPLinkProtocol:
             request = json.dumps(request)
             assert isinstance(request, str)
 
-<<<<<<< HEAD
-=======
         timeout = TPLinkSmartHomeProtocol.DEFAULT_TIMEOUT
 
         async with self.query_lock:
@@ -128,7 +166,6 @@ class TPLinkProtocol:
 
     async def _query(self, request: str, retry_count: int, timeout: int) -> Dict:
         """Try to query a device."""
->>>>>>> far/master
         for retry in range(retry_count + 1):
             if not await self._connect(timeout):
                 await self.close()
@@ -140,21 +177,11 @@ class TPLinkProtocol:
                 continue
 
             try:
-<<<<<<< HEAD
-                _LOGGER.debug("> (%i) %s", len(request), request)
-                response = await self._ask(request)
-                json_payload = json.loads(response)
-                _LOGGER.debug("< (%i) %s", len(response), pf(json_payload))
-
-                return json_payload
-
-=======
                 assert self.reader is not None
                 assert self.writer is not None
                 return await asyncio.wait_for(
                     self._execute_query(request), timeout=timeout
                 )
->>>>>>> far/master
             except Exception as ex:
                 await self.close()
                 if retry >= retry_count:
@@ -163,56 +190,9 @@ class TPLinkProtocol:
                         f"Unable to query the device {self.host}: {ex}"
                     ) from ex
 
-<<<<<<< HEAD
-                _LOGGER.debug("Unable to query the device, retrying: %s", ex)
-
-        raise SmartDeviceException("Not reached")
-
-    async def _ask(self, request: str) -> str:
-        raise SmartDeviceException("ask should be overridden")
-
-
-class TPLinkSmartHomeProtocol(TPLinkProtocol):
-    """Implementation of the TP-Link Smart Home protocol."""
-
-    INITIALIZATION_VECTOR = 171
-    DEFAULT_PORT = 9999
-
-    def __init__(self, host: str):
-        super().__init__(host=host)
-
-    async def _ask(self, request: str) -> str:
-        writer = None
-        try:
-            task = asyncio.open_connection(self.host, self.DEFAULT_PORT)
-            reader, writer = await asyncio.wait_for(task, timeout=self.timeout)
-            writer.write(TPLinkSmartHomeProtocol.encrypt(request))
-            await writer.drain()
-
-            buffer = bytes()
-            # Some devices send responses with a length header of 0 and
-            # terminate with a zero size chunk. Others send the length and
-            # will hang if we attempt to read more data.
-            length = -1
-            while True:
-                chunk = await reader.read(4096)
-                if length == -1:
-                    length = struct.unpack(">I", chunk[0:4])[0]
-                buffer += chunk
-                if (length > 0 and len(buffer) >= length + 4) or not chunk:
-                    break
-
-            return TPLinkSmartHomeProtocol.decrypt(buffer[4:])
-
-        finally:
-            if writer:
-                writer.close()
-                await writer.wait_closed()
-=======
                 _LOGGER.debug(
                     "Unable to query the device %s, retrying: %s", self.host, ex
                 )
->>>>>>> far/master
 
         # make mypy happy, this should never be reached..
         await self.close()
